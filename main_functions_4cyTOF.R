@@ -20,11 +20,11 @@ in_arc_transform <- function(ff){
 
 
 
-
 auto_gate <- function(flow_frame, gate_border){
   result = filter(flow_frame, gate_border$cyto)
+  percentage = round(sum(result@subSet)/length(result@subSet)*100,2)
   result <- Subset(flow_frame,result)
-  return(result)
+  return(list(result,percentage))
 }
 
 
@@ -69,7 +69,8 @@ manuel_gating <- function(marker1, marker2, flowframe_path,
     }
     flow_frame <- flowCore::read.FCS(file,transformation = F)
     flow_frame_transform <- arc_transform(flow_frame)
-    flow_frame_transform_gated <- auto_gate(flow_frame_transform,gate_border=gate_border)
+    flow_frame_transform_gated <- auto_gate(flow_frame_transform,gate_border=gate_border)[1]
+    percentage <- auto_gate(flow_frame_transform,gate_border=gate_border)[2]
     print(file)
     if (gate_png == T){
       i= i+1
@@ -82,6 +83,7 @@ manuel_gating <- function(marker1, marker2, flowframe_path,
                               main = batch_pattern[i], xlab = marker1, ylab= marker2)
         lines(unname(gate_border$cyto@boundaries[,1]),unname(gate_border$cyto@boundaries[,2]),
               xaxt="n", yaxt="n", xlab="", ylab="", type="l",lwd = 3, col = "red")
+        text(paste(percentage, "%", sep = " ") , x= mean(unname(gate_border$cyto@boundaries[,1])), y = mean(unname(gate_border$cyto@boundaries[,2])))
         
       }
       
